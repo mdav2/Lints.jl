@@ -16,8 +16,6 @@ function init()
     return nothing
 end
 
-init()
-
 function close()
     _libint2_static_cleanup = dlsym(libint2,:libint2_static_cleanup)
     ccall(_libint2_static_cleanup,Cvoid,())
@@ -25,21 +23,29 @@ function close()
     return nothing
 end
 
-#include("libint/wrap/libint2_api.jl")
-#include("libint/wrap/libint2_common.jl")
 include("Libint_t.jl")
 @struct_Libint_t(Libint_t,7,1,Float64)
 include("GaussianShell.jl")
 include("BasisSet.jl")
 include("Molecule.jl")
 include("Aux.jl")
-_libint2_init_eri = dlsym(libint2,:libint2_init_eri)
-_libint2_init_default = dlsym(libint2,:libint2_init_default)
-function libint2_init_eri(libint::Lints.Libint_t, max_am, buf)
-    ccall(_libint2_init_eri,Cvoid,(Lints.Libint_t,Cint,Ptr{Float64}),libint,max_am,buf)
+
+
+function libint2_init_eri(libint::Ref{Lints.Libint_t}, max_am, buf)
+    _libint2_init_eri = dlsym(libint2,:libint2_init_eri)
+    ccall(_libint2_init_eri,Cvoid,(Ptr{Lints.Libint_t},Cint,Ptr{Float64}),libint,max_am,buf)
 end
-function libint2_init_default(libint::Lints.Libint_t, max_am, buf)
-    ccall(_libint2_init_default,Cvoid,(Lints.Libint_t,Cint,Cint),libint,max_am,buf)
+function libint2_init_default(libint::Ref{Lints.Libint_t}, max_am, buf)
+    _libint2_init_default = dlsym(libint2,:libint2_init_default)
+    ccall(_libint2_init_default,Cvoid,(Ptr{Lints.Libint_t},Cint,Ptr{Float64}),libint,max_am,buf)
+end
+function libint2_need_memory_default(max_am::Int32)
+    _libint2_need_memory_default = dlsym(libint2,:libint2_need_memory_default)
+    ccall(_libint2_need_memory_default,Csize_t,(Cint,),max_am)
+end
+function libint2_need_memory_overlap(max_am::Int32)
+    _libint2_need_memory_overlap = dlsym(libint2,:libint2_need_memory_overlap)
+    ccall(_libint2_need_memory_overlap,Csize_t,(Cint,),max_am)
 end
 
 end #module

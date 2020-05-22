@@ -25,11 +25,14 @@ macro struct_Libint_t(name,AM,VL,TYPE)
               "two_alpha0_ket"]
         push!(fields,:($(Symbol(i))::NTuple{$VL,$TYPE}))
     end
-    push!(fields,:(stack::Ptr{$TYPE}))
-    push!(fields,:(vstack::Ptr{$TYPE}))
-    push!(fields,:(targets::NTuple{$(4*AM+1),Ptr{$TYPE}}))
-    push!(fields,:(nflops::Ptr{Int64}))
-    push!(fields,:(zero_out_targets::Int32))
+    push!(fields,:(stack::Ptr{Cvoid}))
+    push!(fields,:(vstack::Ptr{Cvoid}))
+    push!(fields,:(targets::NTuple{$(4*AM+1),Ptr{Cvoid}}))
+    push!(fields,:(veclen::Int32))
+    #push!(fields,:(nflops::Ref{Int64}))
+    #push!(fields,:(timers::Ptr{Cvoid}))
+    #push!(fields,:(zero_out_targets::Int32))
+    #push!(fields,:(cont
 
     :(mutable struct $(esc(name))
           $(map(esc,fields)...)
@@ -56,15 +59,17 @@ macro Libint_t(name,AM,VL,TYPE)
             push!($fields,Tuple(zeros($TYPE,$VL)))
         end
     end
-    push!(fields,pointer(zeros(Float64,0)))
-    push!(fields,pointer(zeros(Float64,0)))
+    push!(fields,C_NULL)
+    push!(fields,C_NULL)
     temp = []
     for i in 1:4*AM+1
-        push!(temp,pointer(zeros(Float64,0)))
+        push!(temp,C_NULL)
     end
     push!(fields,Tuple(temp))
-    push!(fields,pointer(zeros(Int64,0)))
-    push!(fields,0)
+    push!(fields,zero(Int32))
+    #push!(fields,zeros(Int64,1))
+    #push!(fields,C_NULL)
+    #push!(fields,zero(Int32))
     :($name($fields...))
 end
 

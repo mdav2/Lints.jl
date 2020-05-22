@@ -25,12 +25,11 @@ macro struct_Libint_t(name,AM,VL,TYPE)
               "two_alpha0_ket"]
         push!(fields,:($(Symbol(i))::NTuple{$VL,$TYPE}))
     end
-    push!(fields,:(stack::Ptr{Cvoid}))
-    push!(fields,:(vstack::Ptr{Cvoid}))
-    push!(fields,:(targets::NTuple{$(4*AM+1),Ptr{Cvoid}}))
-    push!(fields,:(nflops::Ptr{Int}))
-    #space for zero_out_targets
-    #space for contrdepth
+    push!(fields,:(stack::Ptr{$TYPE}))
+    push!(fields,:(vstack::Ptr{$TYPE}))
+    push!(fields,:(targets::NTuple{$(4*AM+1),Ptr{$TYPE}}))
+    push!(fields,:(nflops::Ptr{Int64}))
+    push!(fields,:(zero_out_targets::Int32))
 
     :(mutable struct $(esc(name))
           $(map(esc,fields)...)
@@ -38,6 +37,35 @@ macro struct_Libint_t(name,AM,VL,TYPE)
 end
 
 macro Libint_t(name,AM,VL,TYPE)
+    fields = []
+    @eval begin
+        push!($fields,Tuple(zeros($TYPE,$VL)))
+        for i in 0:2*$AM
+            push!($fields,Tuple(zeros($TYPE,$VL)))
+        end
+        for i in 0:4*$AM
+            push!($fields,Tuple(zeros($TYPE,$VL)))
+        end
+        for i in 1:33
+            push!($fields,Tuple(zeros($TYPE,$VL)))
+        end
+        for i in 1:3
+            push!($fields,Tuple(zeros($TYPE,$VL)))
+        end
+        for i in 1:7
+            push!($fields,Tuple(zeros($TYPE,$VL)))
+        end
+    end
+    push!(fields,pointer(zeros(Float64,0)))
+    push!(fields,pointer(zeros(Float64,0)))
+    temp = []
+    for i in 1:4*AM+1
+        push!(temp,pointer(zeros(Float64,0)))
+    end
+    push!(fields,Tuple(temp))
+    push!(fields,pointer(zeros(Int64,0)))
+    push!(fields,0)
+    :($name($fields...))
 end
 
 #macro Libint_t(name,AM,VL,TYPE)
